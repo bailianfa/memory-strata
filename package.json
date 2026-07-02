@@ -1,0 +1,47 @@
+{
+  "name": "pi-memory-strata",
+  "version": "0.1.0",
+  "description": "Four-layer stratified memory architecture for long-horizon AI agent projects. Auto-distillation, memory decay, and Obsidian vault integration.",
+  "type": "module",
+  "piConfig": {
+    "configDir": ".pi"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "pi-memory-strata": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "scripts",
+    "templates",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "pi",
+    "extension",
+    "memory",
+    "stratified-memory",
+    "obsidian",
+    "long-horizon",
+    "agent-memory"
+  ],
+  "author": "bailianfa",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^11.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "@types/node": "^20.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

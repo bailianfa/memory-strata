@@ -1,20 +1,17 @@
-# memory-strata
+# Memory Strata — 四层分层记忆架构
 
-Four-layer stratified memory architecture for long-horizon AI agent projects.
+> Four-layer stratified memory architecture for long-horizon AI agent projects.
+> Solves critical fact forgetting, memory bloat, and knowledge sedimentation failures.
 
-Solves the three most common memory failures in projects that span months to years:
-
-1. **Critical fact forgetting** — screen orientation, component selection, build constraints lost between sessions
-2. **Memory bloat** — information only accumulates, never decays or archives
-3. **Knowledge stays episodic** — insights trapped in daily logs, never distilled into reusable knowledge
+---
 
 ## Architecture
 
 ```
 L1  System Injection   MEMORY.md — key points + anchors        (auto-loaded every session)
-L2  Project Core       项目核心档案.md — stable facts + ADR     (rarely changes)
-L3  Dev Status         开发状态.md — progress/params/issues     (updates with progress)
-L4  Daily Journal      YYYY-MM-DD.md — session log             (per-session)
+L2  Project Core       project-core.md — stable facts + ADR     (rarely changes)
+L3  Dev Status         dev-status.md — progress/params/issues     (updates with progress)
+L4  Daily Journal      YYYY-MM-DD.md — session log              (per-session)
 ```
 
 ## Three Mechanisms
@@ -29,45 +26,128 @@ L4  Daily Journal      YYYY-MM-DD.md — session log             (per-session)
 
 - Tag entries with `[last_used: YYYY-MM-DD]`
 - >14 days unused → ⚡ rarely used
-- >30 days unused → consider archiving
+- >30 days unused → auto-archive
 
 ### 3. Zettelkasten Link Enhancement
 
-- Bidirectional `[[]]` links between L2↔L3
+- Bidirectional `[[...]]` links between L2↔L3
 - Check link integrity with the distillation script
-
-## Memory Anchors
-
-Explicitly mark facts that are easy to forget but costly to lose:
-
-```markdown
-- **Screen is landscape**: board defaults to portrait, product uses landscape — do not forget
-- **AP6256 already selected**: SRRC certified, mainstream choice — do not re-research
-```
 
 ## Quick Start
 
-1. Copy `templates/` to your Obsidian vault under `20-projects/<your-project>/`
-2. Fill in the project core file with stable facts
-3. Add anchors to your `MEMORY.md` (L1)
-4. Run the distillation check at session end:
+### 1. Initialize a project
 
 ```bash
-python scripts/memory_distill_check.py
+npx pi-memory-strata init-project <project-name>
 ```
 
-## Installation as DuMate Skill
+### 2. Run daily maintenance (or schedule with cron)
 
-Copy the `memory-strata/` directory to your DuMate skill installation path.
+```bash
+npx pi-memory-strata maintain --vault /path/to/vault
+```
+
+### 3. Check memory health
+
+```bash
+npx pi-memory-strata check --vault /path/to/vault
+```
+
+## Installation
+
+### As Pi Extension
+
+```bash
+pi install npm:pi-memory-strata
+```
+
+### As npm package
+
+```bash
+npm install -g pi-memory-strata
+```
+
+### Direct usage (no install)
+
+```bash
+npx pi-memory-strata <command>
+```
+
+## Programmatic API
+
+```typescript
+import { MemoryStrata } from 'pi-memory-strata';
+
+const strata = new MemoryStrata({
+  vaultPath: '/path/to/obsidian-vault',
+  autoArchiveDays: 30,
+  staleWarningDays: 14,
+});
+
+// Run distillation check
+const check = await strata.check();
+console.log(check.ok);
+
+// Run daily maintenance
+const report = await strata.maintain();
+console.log(report.health);
+
+// Initialize new project
+strata.initProject('my-project');
+```
+
+## Vault Structure
+
+```
+obsidian-vault/
+├── 00-brain/
+│   └── MEMORY.md              # L1: System injection
+├── 10-journal/
+│   ├── maintenance/           # Daily maintenance reports
+│   ├── summary/               # Auto-generated daily summaries
+│   └── 2026-01-01.md        # L4: Daily logs
+├── 20-projects/
+│   └── my-project/
+│       ├── dev-status.md    # L3: Development status
+│       └── project-core.md  # L2: Project core archive
+├── 30-knowledge/
+├── 60-learnings/
+│   └── archive/             # Auto-archived entries
+├── scripts/
+│   ├── memory_distill_check.py
+│   └── daily_memory_maintenance.py
+└── templates/
+    ├── 01-status.md
+    └── 02-core.md
+```
+
+## Daily Maintenance (Automated)
+
+Schedule daily maintenance with cron or systemd:
+
+```bash
+# Every day at 09:30
+30 9 * * * npx pi-memory-strata maintain
+```
+
+Maintenance performs:
+1. **Journal coverage check** — verify last 7 days have logs
+2. **Dev status freshness** — warn if >7 days without update
+3. **Core archive freshness** — warn if >30 days without update
+4. **Memory decay** — identify entries with stale `last_used`
+5. **Anchor integrity** — verify memory anchors exist
+6. **Bidirectional links** — check L2↔L3 link completeness
+7. **Auto-archive** — move >30d stale entries to `60-learnings/archive/`
+8. **Daily summary** — generate previous day's summary
 
 ## Academic Context
 
-| Concept | Source | This Skill |
-|---------|--------|-----------|
+| Concept | Source | This Package |
+|---------|--------|-------------|
 | Write-Manage-Read loop | arXiv:2603.07670 | W(journal) + M(distill/decay) + R(search) |
 | Episodic→Semantic promotion | A-MEM (NeurIPS 2025) | L4→L3→L2 distillation |
 | Memory strength decay | MemoryBank (2024) | `last_used` + 30-day archive |
-| Zettelkasten linking | A-MEM | Obsidian `[[]]` bidirectional links |
+| Zettelkasten linking | A-MEM | Obsidian `[[...]]` bidirectional links |
 | Atomic facts | AtomMem (2026) | Memory anchors with consequence tags |
 
 ## License
